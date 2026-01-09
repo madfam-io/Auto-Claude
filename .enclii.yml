@@ -1,0 +1,56 @@
+# Auto-Claude Agent API Enclii Configuration
+# Headless REST API for the Auto-Claude autonomous coding framework
+
+name: auto-claude-api
+project: madfam-automation
+
+# Build configuration
+runtime: dockerfile
+dockerfile: apps/backend/Dockerfile
+context: apps/backend
+
+# Service port
+port: 8080
+
+# Public domains
+domains:
+  - agents-api.madfam.io
+
+# Environment variables
+env:
+  # Janua OAuth2 / JWT Configuration
+  - JANUA_URL=https://auth.madfam.io
+  - JANUA_JWKS_URL=https://auth.madfam.io/.well-known/jwks.json
+
+  # Application Settings
+  - PYTHONUNBUFFERED=1
+  - WORKSPACE_BASE_DIR=/tmp/auto-claude
+  - ENV=production
+
+  # Claude Agent SDK Settings
+  # Note: CLAUDE_CODE_OAUTH_TOKEN must be set as a secret
+  - GRAPHITI_ENABLED=false
+  - LINEAR_MCP_ENABLED=false
+  - CONTEXT7_ENABLED=true
+
+# Secrets (managed via Enclii secrets)
+secrets:
+  - CLAUDE_CODE_OAUTH_TOKEN
+  - ANTHROPIC_API_KEY
+
+# Health check
+healthcheck:
+  path: /health
+  interval: 30s
+  timeout: 10s
+
+# Resource limits (higher than frontend due to agent execution)
+resources:
+  cpu: 2000m
+  memory: 2Gi
+
+# Persistent volume for workspace data
+volumes:
+  - name: workspace-data
+    path: /tmp/auto-claude
+    size: 10Gi
