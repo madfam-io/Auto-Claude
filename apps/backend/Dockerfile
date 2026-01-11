@@ -34,13 +34,14 @@ RUN useradd -m -s /bin/bash appuser
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+# Note: Enclii builds from repo root, so paths are relative to repo root
+COPY apps/backend/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY apps/backend/ .
 
 # Create workspace directory for task execution
 RUN mkdir -p /tmp/auto-claude && chown -R appuser:appuser /tmp/auto-claude

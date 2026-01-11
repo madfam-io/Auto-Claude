@@ -1,56 +1,40 @@
-# Auto-Claude Agent API Enclii Configuration
+# Auto-Claude Agent API - Enclii Service Specification
 # Headless REST API for the Auto-Claude autonomous coding framework
 
-name: auto-claude-api
-project: madfam-automation
-
-# Build configuration
-runtime: dockerfile
-dockerfile: apps/backend/Dockerfile
-context: apps/backend
-
-# Service port
-port: 8080
-
-# Public domains
-domains:
-  - agents-api.madfam.io
-
-# Environment variables
-env:
-  # Janua OAuth2 / JWT Configuration
-  - JANUA_URL=https://auth.madfam.io
-  - JANUA_JWKS_URL=https://auth.madfam.io/.well-known/jwks.json
-
-  # Application Settings
-  - PYTHONUNBUFFERED=1
-  - WORKSPACE_BASE_DIR=/tmp/auto-claude
-  - ENV=production
-
-  # Claude Agent SDK Settings
-  # Note: CLAUDE_CODE_OAUTH_TOKEN must be set as a secret
-  - GRAPHITI_ENABLED=false
-  - LINEAR_MCP_ENABLED=false
-  - CONTEXT7_ENABLED=true
-
-# Secrets (managed via Enclii secrets)
-secrets:
-  - CLAUDE_CODE_OAUTH_TOKEN
-  - ANTHROPIC_API_KEY
-
-# Health check
-healthcheck:
-  path: /health
-  interval: 30s
-  timeout: 10s
-
-# Resource limits (higher than frontend due to agent execution)
-resources:
-  cpu: 2000m
-  memory: 2Gi
-
-# Persistent volume for workspace data
-volumes:
-  - name: workspace-data
-    path: /tmp/auto-claude
-    size: 10Gi
+apiVersion: enclii.dev/v1alpha
+kind: Service
+metadata:
+  name: auto-claude-api
+  project: madfam-automation
+spec:
+  build:
+    type: dockerfile
+    dockerfile: apps/backend/Dockerfile
+  runtime:
+    port: 8080
+    replicas: 1
+    healthCheck: /health
+  env:
+    # Janua OAuth2 / JWT Configuration
+    - name: JANUA_URL
+      value: "https://auth.madfam.io"
+    - name: JANUA_JWKS_URL
+      value: "https://auth.madfam.io/.well-known/jwks.json"
+    # Application Settings
+    - name: PYTHONUNBUFFERED
+      value: "1"
+    - name: WORKSPACE_BASE_DIR
+      value: "/tmp/auto-claude"
+    - name: ENV
+      value: "production"
+    # Claude Agent SDK Settings
+    - name: GRAPHITI_ENABLED
+      value: "false"
+    - name: LINEAR_MCP_ENABLED
+      value: "false"
+    - name: CONTEXT7_ENABLED
+      value: "true"
+  volumes:
+    - name: workspace-data
+      mountPath: /tmp/auto-claude
+      size: 10Gi
